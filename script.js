@@ -37,7 +37,8 @@ async function init() {
   const pathn = location.pathname;
 
   // Load bani
-  const bani = await loadBani(getBaniNameFromPath(pathn))
+  const bani = await loadBani(getBaniNameFromPath(pathn));
+  if (!bani) return;
 
   // Render bani
   renderBani(bani);
