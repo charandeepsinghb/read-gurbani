@@ -9,12 +9,11 @@ const BANIS = [
 function getCurrentBaniProperties() {
   // Get pathname
   const pathn = location.pathname;
-
-  if (!pathn || pathn == "/") return;
-  
   const path = pathn.substring(pathn.lastIndexOf("/")+1);
 
-  return BANIS.find(x => true);
+  if (!path) return;
+
+  return BANIS.find(x => x.path == path);
 }
 
 async function loadBani() {
