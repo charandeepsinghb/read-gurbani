@@ -6,7 +6,7 @@ async function loadBani(baniname) {
       break;
   
     default:
-      break;
+      return;
   }
   const module = await import(banifile);
   return module.BANI;
