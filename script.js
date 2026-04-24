@@ -28,7 +28,7 @@ async function init() {
 
   // Get pathname
   const pathn = location.pathname;
-  if (!pathn) return;
+  if (!pathn || pathn == "/") return;
 
   // Load bani
   const bani = await loadBani(pathn)
