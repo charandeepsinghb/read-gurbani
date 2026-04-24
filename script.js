@@ -1,25 +1,39 @@
-async function loadBani(baniname) {
-  let banifile = "";
-  switch (baniname) {
-    case '/japji-sahib':
-      banifile = "./japji-sahib-bani.js"
-      break;
-  
-    default:
-      return;
+const BANIS = [
+  {
+    name: "Japji Sahib",
+    path: "japji-sahib",
+    baniFile: "japji-sahib-bani.js"
   }
-  const module = await import(banifile);
+];
+
+function getCurrentBaniProperties() {
+  // Get pathname
+  const pathn = location.pathname;
+
+  if (!pathn || pathn == "/") return;
+  
+  const path = pathn.substring(pathn.lastIndexOf("/")+1);
+
+  return BANIS.find(x => true);
+}
+
+async function loadBani() {
+  let banifile = "";
+  
+  const { baniFile } = getCurrentBaniProperties() || {};
+
+  if (!baniFile) return;
+  
+  const module = await import("./" + baniFile);
   return module.BANI;
 }
 
-function renderBani(bani) {
+function renderBani(bani, baniDiv) {
   for (let i = 0; i < bani.length; i++) {
     const pauri = bani[i];
     const pauriSpan = document.createElement("span");
     pauriSpan.innerText = pauri;
 
-    // Bani div
-    const baniDiv = document.getElementById("bani");
     baniDiv.appendChild(pauriSpan);
   }
 }
@@ -31,17 +45,38 @@ function getBaniNameFromPath(pathn) {
   return pathn;
 }
 
-async function init() {
+function renderBanisList(baniDiv) {
+  const frag = document.createDocumentFragment();
 
-  // Get pathname
-  const pathn = location.pathname;
+  for (let i = 0; i < BANIS.length; i++) {
+    const { name, path } = BANIS[i];
+    
+    const baniName = document.createElement("div");
+    const baniLink = document.createElement("a");
+    baniLink.href = path;
+    baniLink.innerText = name;
+    
+    baniName.appendChild(baniLink);
+
+    frag.appendChild(baniName);
+  }
+
+  baniDiv.replaceChildren(frag);
+}
+
+async function init() {
+  // Bani div
+  const baniDiv = document.getElementById("bani");
 
   // Load bani
-  const bani = await loadBani(getBaniNameFromPath(pathn));
-  if (!bani) return;
+  const bani = await loadBani();
+  if (!bani) {
+    renderBanisList(baniDiv);
+    return;
+  }
 
   // Render bani
-  renderBani(bani);
+  renderBani(bani, baniDiv);
 }
 
 await init();
