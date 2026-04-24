@@ -1,0 +1,7 @@
+.bani {
+  font-size: xx-large;
+}
+
+.bani > span {
+  margin-right: 1rem;
+}
