@@ -24,14 +24,20 @@ function renderBani(bani) {
   }
 }
 
+function getBaniNameFromPath(pathn) {
+  if (!pathn || pathn == "/") return;
+  
+  pathn = pathn.substring(pathn.lastIndexOf("/"));
+  return pathn;
+}
+
 async function init() {
 
   // Get pathname
   const pathn = location.pathname;
-  if (!pathn || pathn == "/") return;
 
   // Load bani
-  const bani = await loadBani(pathn)
+  const bani = await loadBani(getBaniNameFromPath(pathn))
 
   // Render bani
   renderBani(bani);
