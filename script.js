@@ -2,7 +2,7 @@ const BANIS = [
   {
     name: "Japji Sahib",
     path: "japji-sahib",
-    baniFile: "japji-sahib-bani.js"
+    baniFile: "japji-sahib.json"
   }
 ];
 
@@ -23,17 +23,31 @@ async function loadBani() {
 
   if (!baniFile) return;
   
-  const module = await import("./" + baniFile);
-  return module.BANI;
+  const bani = await fetch("./" + baniFile);
+
+  return bani.json();
 }
 
 function renderBani(bani, baniDiv) {
+
+  // Para
+  let para = document.createElement("div");
+
   for (let i = 0; i < bani.length; i++) {
+
+    // Pauri
     const pauri = bani[i];
     const pauriSpan = document.createElement("span");
-    pauriSpan.innerText = pauri;
+    pauriSpan.innerText = pauri.unicode;
 
-    baniDiv.appendChild(pauriSpan);
+    para.appendChild(pauriSpan);
+
+    if (i < bani.length-1 && pauri.paragraph < bani[i+1].paragraph) {
+      baniDiv.appendChild(para);
+      para = document.createElement("div");
+    } else if (i == bani.length-1) {
+      baniDiv.appendChild(para);
+    }
   }
 }
 
