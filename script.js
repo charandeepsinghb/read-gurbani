@@ -1,4 +1,4 @@
-// === Banis ===
+// ==== Banis ====
 
 const BANIS = [
   {
@@ -37,7 +37,7 @@ function getCurrentBaniProperties() {
   return BANIS.find(x => x.path == path);
 }
 
-// === Load and Render Bani ===
+// ==== Load and Render Bani ====
 
 async function loadBani() {
   let banifile = "";
@@ -74,14 +74,21 @@ function renderBani(bani, baniDiv) {
   }
 }
 
-// === Settings ===
+// ==== Settings ====
 
 function renderSettings() {
   // TODO
 }
 
 
-// === Initialization ===
+// ==== Overlay ====
+
+function setOverlay() {
+  // TODO
+}
+
+
+// ==== Initialization ====
 
 async function init() {
   // Bani div
