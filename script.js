@@ -39,6 +39,10 @@ function getCurrentBaniProperties() {
 
 // ==== Load and Render Bani ====
 
+// Bani div
+const baniDiv = document.getElementById("bani");
+let bani;
+
 async function loadBani() {
   let banifile = "";
   
@@ -51,7 +55,7 @@ async function loadBani() {
   return bani.json();
 }
 
-function renderBani(bani, baniDiv) {
+function renderAllBani() {
 
   // Para
   let para = document.createElement("div");
@@ -74,6 +78,50 @@ function renderBani(bani, baniDiv) {
   }
 }
 
+
+let start = 0;
+let lastPauriIndex;
+
+function renderBani(start) {
+
+  for (let i = start; i < bani.length; i++) {
+
+    const pauriSpan = document.createElement("span");
+
+    pauriSpan.id = "pauri-" + i;
+    pauriSpan.innerText = bani[i].unicode;
+
+    baniDiv.appendChild(pauriSpan);
+
+    // Limit
+    if (baniDiv.offsetHeight > window.innerHeight) {
+      lastPauriIndex = i;
+      break;
+    }
+  }
+}
+
+function renderBaniReverse(currentStart) {
+  if (currentStart <= 0) {
+    return;
+  }
+  lastPauriIndex = currentStart;
+  for (let i = currentStart; i >= 0; i--) {
+    const pauriSpan = document.createElement("span");
+
+    pauriSpan.id = "pauri-" + i;
+    pauriSpan.innerText = bani[i].unicode;
+
+    baniDiv.prepend(pauriSpan);
+
+    // Limit
+    if (baniDiv.offsetHeight > window.innerHeight) {
+      start = i;
+      break;
+    }
+  }
+}
+
 // ==== Settings ====
 
 function renderSettings() {
@@ -88,21 +136,59 @@ function setOverlay() {
 }
 
 
+// ==== Next prev ====
+
+
+function next() {
+  baniDiv.replaceChildren();
+  
+  start = lastPauriIndex + 1;
+  
+  renderBani(start);
+  console.log(start, lastPauriIndex);
+}
+function prev() {
+  if (start-1 <= 0) {
+    return;
+  }
+  baniDiv.replaceChildren();
+  renderBaniReverse(start-1);
+  console.log(start, lastPauriIndex);
+}
+
+window.addEventListener("keyup", (e) => {
+  if (e.key == "ArrowRight") {
+    next();
+  }
+  if (e.key == "ArrowLeft") {
+    prev();
+  }
+});
+
+// ==== Touch ===
+window.addEventListener("pointerup", (e) => {
+  if (document.documentElement.scrollWidth / 2 < e.pageX) {
+    next();
+  }
+  if (document.documentElement.scrollWidth / 2 > e.pageX) {
+    prev();
+  }
+});
+
+
 // ==== Initialization ====
 
 async function init() {
-  // Bani div
-  const baniDiv = document.getElementById("bani");
 
   // Load bani
-  const bani = await loadBani();
+  bani = await loadBani();
   if (!bani) {
     renderBanisList(baniDiv);
     return;
   }
 
   // Render bani
-  renderBani(bani, baniDiv);
+  renderBani(start);
 }
 
 (async () => await init())()

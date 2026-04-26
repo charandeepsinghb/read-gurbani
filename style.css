@@ -1,7 +1,20 @@
 .bani {
   font-size: xx-large;
+  padding: 10px;
+}
+
+body {
+  margin: 0;
 }
 
 .bani span {
   margin-right: 1rem;
+}
+
+/* Select disable */
+.bani {
+  -webkit-user-select: none; /* Safari, Chrome, and Opera */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* Internet Explorer/Edge */
+  user-select: none;         /* Standard syntax */
 }
