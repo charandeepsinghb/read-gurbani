@@ -1,3 +1,5 @@
+// === Banis ===
+
 const BANIS = [
   {
     name: "Japji Sahib",
@@ -5,6 +7,25 @@ const BANIS = [
     baniFile: "japji-sahib.json"
   }
 ];
+
+function renderBanisList(baniDiv) {
+  const frag = document.createDocumentFragment();
+
+  for (let i = 0; i < BANIS.length; i++) {
+    const { name, path } = BANIS[i];
+    
+    const baniName = document.createElement("div");
+    const baniLink = document.createElement("a");
+    baniLink.href = path;
+    baniLink.innerText = name;
+    
+    baniName.appendChild(baniLink);
+
+    frag.appendChild(baniName);
+  }
+
+  baniDiv.replaceChildren(frag);
+}
 
 function getCurrentBaniProperties() {
   // Get pathname
@@ -15,6 +36,8 @@ function getCurrentBaniProperties() {
 
   return BANIS.find(x => x.path == path);
 }
+
+// === Load and Render Bani ===
 
 async function loadBani() {
   let banifile = "";
@@ -51,31 +74,14 @@ function renderBani(bani, baniDiv) {
   }
 }
 
-function getBaniNameFromPath(pathn) {
-  if (!pathn || pathn == "/") return;
-  
-  pathn = pathn.substring(pathn.lastIndexOf("/"));
-  return pathn;
+// === Settings ===
+
+function renderSettings() {
+  // TODO
 }
 
-function renderBanisList(baniDiv) {
-  const frag = document.createDocumentFragment();
 
-  for (let i = 0; i < BANIS.length; i++) {
-    const { name, path } = BANIS[i];
-    
-    const baniName = document.createElement("div");
-    const baniLink = document.createElement("a");
-    baniLink.href = path;
-    baniLink.innerText = name;
-    
-    baniName.appendChild(baniLink);
-
-    frag.appendChild(baniName);
-  }
-
-  baniDiv.replaceChildren(frag);
-}
+// === Initialization ===
 
 async function init() {
   // Bani div
@@ -92,4 +98,4 @@ async function init() {
   renderBani(bani, baniDiv);
 }
 
-await init();
+(async () => await init())()
