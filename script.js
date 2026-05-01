@@ -84,18 +84,32 @@ let lastPauriIndex;
 
 function renderBani(start) {
 
+  let para = document.createElement("div");
+  para.className = "para";
+
   for (let i = start; i < bani.length; i++) {
+
+    baniDiv.appendChild(para);
 
     const pauriSpan = document.createElement("span");
 
     pauriSpan.id = "pauri-" + i;
     pauriSpan.innerText = bani[i].unicode;
 
-    baniDiv.appendChild(pauriSpan);
+    para.appendChild(pauriSpan);
+
+    if (i != bani.length-1) {
+      if (bani[i+1].paragraph != bani[i].paragraph) {
+        para = document.createElement("div");
+        para.className = "para";
+      }
+    }
 
     // Limit
     if (baniDiv.offsetHeight > window.innerHeight) {
       lastPauriIndex = i;
+      para = document.createElement("div");
+      para.className = "para";
       break;
     }
   }
@@ -106,17 +120,32 @@ function renderBaniReverse(currentStart) {
     return;
   }
   lastPauriIndex = currentStart;
+
+  let para = document.createElement("div");
+  para.className = "para";
+
   for (let i = currentStart; i >= 0; i--) {
+    baniDiv.prepend(para);
+    
     const pauriSpan = document.createElement("span");
 
     pauriSpan.id = "pauri-" + i;
     pauriSpan.innerText = bani[i].unicode;
 
-    baniDiv.prepend(pauriSpan);
+    para.prepend(pauriSpan);
+
+    if (i != 0) {
+      if (bani[i-1].paragraph != bani[i].paragraph) {
+        para = document.createElement("div");
+        para.className = "para";
+      }
+    }
 
     // Limit
     if (baniDiv.offsetHeight > window.innerHeight) {
       start = i;
+      para = document.createElement("div");
+      para.className = "para";
       break;
     }
   }

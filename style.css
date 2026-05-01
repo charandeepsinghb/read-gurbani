@@ -11,6 +11,10 @@ body {
   margin-right: 1rem;
 }
 
+.para {
+  margin-bottom: 1rem;
+}
+
 /* Select disable */
 .bani {
   -webkit-user-select: none; /* Safari, Chrome, and Opera */
