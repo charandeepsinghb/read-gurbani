@@ -78,14 +78,48 @@ async function loadBani() {
 //   }
 // }
 
+let pages = [];
+let currentPage = 0;
 
-let start = 0;
-let lastPauriIndex;
+function renderPage(pageIndex) {
 
-function renderBani(start) {
+  const page = pages[pageIndex];
+
+  baniDiv.replaceChildren();
+
+  let para;
+
+  for (let i = page.start; i <= page.end; i++) {
+
+    if (!para) {
+      para = document.createElement("div");
+      para.className = "para";
+      baniDiv.appendChild(para);
+    }
+
+    const span = document.createElement("span");
+    span.id = "pauri-" + i;
+    span.innerText = bani[i].unicode;
+
+    para.appendChild(span);
+
+    if (
+      i !== page.end &&
+      bani[i + 1].paragraph !== bani[i].paragraph
+    ) {
+      para = null;
+    }
+  }
+}
+
+function calculatePage(start) {
+
+  baniDiv.replaceChildren();
 
   let para = document.createElement("div");
   para.className = "para";
+
+  let end = start - 1;
 
   for (let i = start; i < bani.length; i++) {
 
@@ -93,84 +127,44 @@ function renderBani(start) {
       baniDiv.appendChild(para);
     }
 
-    const pauriSpan = document.createElement("span");
+    const span = document.createElement("span");
 
-    pauriSpan.id = "pauri-" + i;
-    pauriSpan.innerText = bani[i].unicode;
+    span.innerText = bani[i].unicode;
 
-    para.appendChild(pauriSpan);
+    para.appendChild(span);
 
-    // Check after adding
+
     if (baniDiv.offsetHeight > window.innerHeight) {
-      pauriSpan.remove();
 
-      // Remove empty paragraph
+      span.remove();
+
       if (para.children.length === 0) {
         para.remove();
       }
 
-      lastPauriIndex = i - 1;
-      return;
+      break;
     }
 
-    // This pauri fits
-    lastPauriIndex = i;
 
-    if (i !== bani.length - 1 &&
-        bani[i + 1].paragraph !== bani[i].paragraph) {
+    end = i;
+
+
+    if (
+      i < bani.length - 1 &&
+      bani[i + 1].paragraph !== bani[i].paragraph
+    ) {
       para = document.createElement("div");
       para.className = "para";
     }
   }
-}
 
-function renderBaniReverse(currentStart) {
 
-  if (currentStart < 0) {
-    return;
-  }
+  pages[currentPage] = {
+    start,
+    end
+  };
 
-  lastPauriIndex = currentStart;
-
-  let para = document.createElement("div");
-  para.className = "para";
-
-  for (let i = currentStart; i >= 0; i--) {
-
-    if (!para.parentNode) {
-      baniDiv.prepend(para);
-    }
-
-    const pauriSpan = document.createElement("span");
-
-    pauriSpan.id = "pauri-" + i;
-    pauriSpan.innerText = bani[i].unicode;
-
-    para.prepend(pauriSpan);
-
-    // Check after adding
-    if (baniDiv.offsetHeight > window.innerHeight) {
-      pauriSpan.remove();
-
-      // Remove empty paragraph
-      if (para.children.length === 0) {
-        para.remove();
-      }
-
-      // Next page should start after the removed pauri
-      start = i + 1;
-      return;
-    }
-
-    // We successfully reached this index
-    start = i;
-
-    if (i !== 0 &&
-        bani[i - 1].paragraph !== bani[i].paragraph) {
-      para = document.createElement("div");
-      para.className = "para";
-    }
-  }
+  renderPage(pages.length - 1);
 }
 
 // ==== Settings ====
@@ -192,23 +186,34 @@ function setOverlay() {
 
 function next() {
 
-  if (lastPauriIndex >= bani.length - 1) {
+  const page = pages[currentPage];
+
+  if (page.end >= bani.length - 1) {
     return;
   }
 
-  baniDiv.replaceChildren();
 
-  start = lastPauriIndex + 1;
+  currentPage++;
 
-  renderBani(start);
+
+  if (pages[currentPage]) {
+    renderPage(currentPage);
+    return;
+  }
+
+
+  calculatePage(page.end + 1);
 }
 function prev() {
-  if (start <= 0) {
+
+  if (currentPage === 0) {
     return;
   }
 
-  baniDiv.replaceChildren();
-  renderBaniReverse(start - 1);
+
+  currentPage--;
+
+  renderPage(currentPage);
 }
 
 window.addEventListener("keyup", (e) => {
@@ -243,7 +248,7 @@ async function init() {
   }
 
   // Render bani
-  renderBani(start);
+  calculatePage(0);
 }
 
 (async () => await init())()
