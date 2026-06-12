@@ -55,28 +55,28 @@ async function loadBani() {
   return bani.json();
 }
 
-function renderAllBani() {
+// function renderAllBani() {
 
-  // Para
-  let para = document.createElement("div");
+//   // Para
+//   let para = document.createElement("div");
 
-  for (let i = 0; i < bani.length; i++) {
+//   for (let i = 0; i < bani.length; i++) {
 
-    // Pauri
-    const pauri = bani[i];
-    const pauriSpan = document.createElement("span");
-    pauriSpan.innerText = pauri.unicode;
+//     // Pauri
+//     const pauri = bani[i];
+//     const pauriSpan = document.createElement("span");
+//     pauriSpan.innerText = pauri.unicode;
 
-    para.appendChild(pauriSpan);
+//     para.appendChild(pauriSpan);
 
-    if (i < bani.length-1 && pauri.paragraph < bani[i+1].paragraph) {
-      baniDiv.appendChild(para);
-      para = document.createElement("div");
-    } else if (i == bani.length-1) {
-      baniDiv.appendChild(para);
-    }
-  }
-}
+//     if (i < bani.length-1 && pauri.paragraph < bani[i+1].paragraph) {
+//       baniDiv.appendChild(para);
+//       para = document.createElement("div");
+//     } else if (i == bani.length-1) {
+//       baniDiv.appendChild(para);
+//     }
+//   }
+// }
 
 
 let start = 0;
@@ -89,7 +89,9 @@ function renderBani(start) {
 
   for (let i = start; i < bani.length; i++) {
 
-    baniDiv.appendChild(para);
+    if (!para.parentNode) {
+      baniDiv.appendChild(para);
+    }
 
     const pauriSpan = document.createElement("span");
 
@@ -98,35 +100,47 @@ function renderBani(start) {
 
     para.appendChild(pauriSpan);
 
-    if (i != bani.length-1) {
-      if (bani[i+1].paragraph != bani[i].paragraph) {
-        para = document.createElement("div");
-        para.className = "para";
+    // Check after adding
+    if (baniDiv.offsetHeight > window.innerHeight) {
+      pauriSpan.remove();
+
+      // Remove empty paragraph
+      if (para.children.length === 0) {
+        para.remove();
       }
+
+      lastPauriIndex = i - 1;
+      return;
     }
 
-    // Limit
-    if (baniDiv.offsetHeight > window.innerHeight) {
-      lastPauriIndex = i;
+    // This pauri fits
+    lastPauriIndex = i;
+
+    if (i !== bani.length - 1 &&
+        bani[i + 1].paragraph !== bani[i].paragraph) {
       para = document.createElement("div");
       para.className = "para";
-      break;
     }
   }
 }
 
 function renderBaniReverse(currentStart) {
-  if (currentStart <= 0) {
+
+  if (currentStart < 0) {
     return;
   }
+
   lastPauriIndex = currentStart;
 
   let para = document.createElement("div");
   para.className = "para";
 
   for (let i = currentStart; i >= 0; i--) {
-    baniDiv.prepend(para);
-    
+
+    if (!para.parentNode) {
+      baniDiv.prepend(para);
+    }
+
     const pauriSpan = document.createElement("span");
 
     pauriSpan.id = "pauri-" + i;
@@ -134,19 +148,27 @@ function renderBaniReverse(currentStart) {
 
     para.prepend(pauriSpan);
 
-    if (i != 0) {
-      if (bani[i-1].paragraph != bani[i].paragraph) {
-        para = document.createElement("div");
-        para.className = "para";
+    // Check after adding
+    if (baniDiv.offsetHeight > window.innerHeight) {
+      pauriSpan.remove();
+
+      // Remove empty paragraph
+      if (para.children.length === 0) {
+        para.remove();
       }
+
+      // Next page should start after the removed pauri
+      start = i + 1;
+      return;
     }
 
-    // Limit
-    if (baniDiv.offsetHeight > window.innerHeight) {
-      start = i;
+    // We successfully reached this index
+    start = i;
+
+    if (i !== 0 &&
+        bani[i - 1].paragraph !== bani[i].paragraph) {
       para = document.createElement("div");
       para.className = "para";
-      break;
     }
   }
 }
@@ -169,20 +191,24 @@ function setOverlay() {
 
 
 function next() {
-  baniDiv.replaceChildren();
-  
-  start = lastPauriIndex + 1;
-  
-  renderBani(start);
-  console.log(start, lastPauriIndex);
-}
-function prev() {
-  if (start-1 <= 0) {
+
+  if (lastPauriIndex >= bani.length - 1) {
     return;
   }
+
   baniDiv.replaceChildren();
-  renderBaniReverse(start-1);
-  console.log(start, lastPauriIndex);
+
+  start = lastPauriIndex + 1;
+
+  renderBani(start);
+}
+function prev() {
+  if (start <= 0) {
+    return;
+  }
+
+  baniDiv.replaceChildren();
+  renderBaniReverse(start - 1);
 }
 
 window.addEventListener("keyup", (e) => {
