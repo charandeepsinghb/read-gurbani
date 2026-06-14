@@ -247,7 +247,7 @@ function showTapIcon(quadrantCls) {
 
 // ==== Touch ===
 
-window.addEventListener("pointerup", (e) => {
+window.addEventListener("click", (e) => {
   if (!bani) return;
   if (e.target.closest(".settings-overlay")) return;
 
@@ -273,41 +273,34 @@ window.addEventListener("pointerup", (e) => {
 
 // ==== Settings Overlay ====
 
-const FONT_SIZES = [
-  { label: "Small", value: "small" },
-  { label: "Medium", value: "medium" },
-  { label: "Large", value: "large" },
-  { label: "X-Large", value: "x-large" },
-  { label: "XX-Large", value: "xx-large" },
-  { label: "XXX-Large", value: "xxx-large" },
-  { label: "Huge", value: "48px" }
-];
-
-const DEFAULT_FONT_INDEX = 4;
+const FONT_SIZE_MIN = 12;
+const FONT_SIZE_MAX = 48;
+const FONT_SIZE_DEFAULT = 32;
 
 const settingsOverlay = document.createElement("div");
 settingsOverlay.className = "settings-overlay";
 
 let showSettings = false;
 
-function getFontSizeIndex() {
+function getFontSize() {
   const saved = localStorage.getItem("bani-font-size");
   if (saved !== null) {
-    const idx = FONT_SIZES.findIndex(fs => fs.value === saved);
-    if (idx !== -1) return idx;
+    const num = parseInt(saved, 10);
+    if (!isNaN(num) && num >= FONT_SIZE_MIN && num <= FONT_SIZE_MAX) {
+      return num;
+    }
   }
-  return DEFAULT_FONT_INDEX;
+  return FONT_SIZE_DEFAULT;
 }
 
-function applyFontSize(index) {
-  const size = FONT_SIZES[index].value;
-  document.documentElement.style.setProperty("--bani-font-size", size);
-  localStorage.setItem("bani-font-size", size);
+function applyFontSize(size) {
+  document.documentElement.style.setProperty("--bani-font-size", size + "px");
+  localStorage.setItem("bani-font-size", String(size));
 
   const label = settingsOverlay.querySelector(".font-size-label");
   const slider = settingsOverlay.querySelector(".font-size-slider");
-  if (label) label.textContent = FONT_SIZES[index].label;
-  if (slider) slider.value = index;
+  if (label) label.textContent = size + "px";
+  if (slider) slider.value = size;
 }
 
 function buildSettingsPanel() {
@@ -324,7 +317,7 @@ function buildSettingsPanel() {
 
   const sizeLabel = document.createElement("span");
   sizeLabel.className = "font-size-label";
-  sizeLabel.textContent = FONT_SIZES[getFontSizeIndex()].label;
+  sizeLabel.textContent = getFontSize() + "px";
   label.appendChild(sizeLabel);
   panel.appendChild(label);
 
@@ -332,9 +325,10 @@ function buildSettingsPanel() {
   slider.type = "range";
   slider.id = "font-size-slider";
   slider.className = "font-size-slider";
-  slider.min = 0;
-  slider.max = FONT_SIZES.length - 1;
-  slider.value = getFontSizeIndex();
+  slider.min = FONT_SIZE_MIN;
+  slider.max = FONT_SIZE_MAX;
+  slider.step = 1;
+  slider.value = getFontSize();
   slider.addEventListener("input", () => {
     applyFontSize(parseInt(slider.value, 10));
   });
@@ -364,11 +358,11 @@ function toggleSettings() {
   settingsOverlay.classList.toggle("open", showSettings);
 
   if (showSettings) {
-    const idx = getFontSizeIndex();
+    const size = getFontSize();
     const slider = settingsOverlay.querySelector(".font-size-slider");
     const label = settingsOverlay.querySelector(".font-size-label");
-    if (slider) slider.value = idx;
-    if (label) label.textContent = FONT_SIZES[idx].label;
+    if (slider) slider.value = size;
+    if (label) label.textContent = size + "px";
   }
 }
 
@@ -381,7 +375,7 @@ async function init() {
     return;
   }
 
-  applyFontSize(getFontSizeIndex());
+  applyFontSize(getFontSize());
 
   const bookmark = loadBookmark();
 

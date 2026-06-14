@@ -1,5 +1,5 @@
 :root {
-  --bani-font-size: xx-large;
+  --bani-font-size: 32px;
   --tap-icon-size: 48px;
   --tap-icon-size-phone: 36px;
 }
@@ -79,6 +79,11 @@ body {
   .tap-indicator .quadrant svg {
     width: var(--tap-icon-size-phone);
     height: var(--tap-icon-size-phone);
+  }
+
+  .settings-panel {
+    margin-left: 16px;
+    margin-right: 16px;
   }
 }
 
