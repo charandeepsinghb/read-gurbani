@@ -13,14 +13,13 @@ function renderBanisList(baniDiv) {
 
   for (let i = 0; i < BANIS.length; i++) {
     const { name, path } = BANIS[i];
-    
+
     const baniName = document.createElement("div");
     const baniLink = document.createElement("a");
     baniLink.href = path;
     baniLink.innerText = name;
-    
-    baniName.appendChild(baniLink);
 
+    baniName.appendChild(baniLink);
     frag.appendChild(baniName);
   }
 
@@ -28,9 +27,8 @@ function renderBanisList(baniDiv) {
 }
 
 function getCurrentBaniProperties() {
-  // Get pathname
   const pathn = location.pathname;
-  const path = pathn.substring(pathn.lastIndexOf("/")+1);
+  const path = pathn.substring(pathn.lastIndexOf("/") + 1);
 
   if (!path) return;
 
@@ -39,50 +37,23 @@ function getCurrentBaniProperties() {
 
 // ==== Load and Render Bani ====
 
-// Bani div
 const baniDiv = document.getElementById("bani");
 let bani;
 
 async function loadBani() {
-  let banifile = "";
-  
   const { baniFile } = getCurrentBaniProperties() || {};
 
   if (!baniFile) return;
-  
-  const bani = await fetch("./" + baniFile);
 
-  return bani.json();
+  const response = await fetch("./" + baniFile);
+
+  return response.json();
 }
-
-// function renderAllBani() {
-
-//   // Para
-//   let para = document.createElement("div");
-
-//   for (let i = 0; i < bani.length; i++) {
-
-//     // Pauri
-//     const pauri = bani[i];
-//     const pauriSpan = document.createElement("span");
-//     pauriSpan.innerText = pauri.unicode;
-
-//     para.appendChild(pauriSpan);
-
-//     if (i < bani.length-1 && pauri.paragraph < bani[i+1].paragraph) {
-//       baniDiv.appendChild(para);
-//       para = document.createElement("div");
-//     } else if (i == bani.length-1) {
-//       baniDiv.appendChild(para);
-//     }
-//   }
-// }
 
 let pages = [];
 let currentPage = 0;
 
 function renderPage(pageIndex) {
-
   const page = pages[pageIndex];
 
   baniDiv.replaceChildren();
@@ -90,7 +61,6 @@ function renderPage(pageIndex) {
   let para;
 
   for (let i = page.start; i <= page.end; i++) {
-
     if (!para) {
       para = document.createElement("div");
       para.className = "para";
@@ -113,7 +83,6 @@ function renderPage(pageIndex) {
 }
 
 function calculatePage(start) {
-
   baniDiv.replaceChildren();
 
   let para = document.createElement("div");
@@ -122,7 +91,6 @@ function calculatePage(start) {
   let end = start - 1;
 
   for (let i = start; i < bani.length; i++) {
-
     if (!para.parentNode) {
       baniDiv.appendChild(para);
     }
@@ -133,9 +101,7 @@ function calculatePage(start) {
 
     para.appendChild(span);
 
-
     if (baniDiv.offsetHeight > window.innerHeight) {
-
       span.remove();
 
       if (para.children.length === 0) {
@@ -145,9 +111,7 @@ function calculatePage(start) {
       break;
     }
 
-
     end = i;
-
 
     if (
       i < bani.length - 1 &&
@@ -158,7 +122,6 @@ function calculatePage(start) {
     }
   }
 
-
   pages[currentPage] = {
     start,
     end
@@ -167,49 +130,29 @@ function calculatePage(start) {
   renderPage(pages.length - 1);
 }
 
-// ==== Settings ====
-
-function renderSettings() {
-  // TODO
-}
-
-
-// ==== Overlay ====
-
-function setOverlay() {
-  // TODO
-}
-
-
 // ==== Next prev ====
 
-
 function next() {
-
   const page = pages[currentPage];
 
   if (page.end >= bani.length - 1) {
     return;
   }
 
-
   currentPage++;
-
 
   if (pages[currentPage]) {
     renderPage(currentPage);
     return;
   }
 
-
   calculatePage(page.end + 1);
 }
-function prev() {
 
+function prev() {
   if (currentPage === 0) {
     return;
   }
-
 
   currentPage--;
 
@@ -225,30 +168,240 @@ window.addEventListener("keyup", (e) => {
   }
 });
 
-// ==== Touch ===
-window.addEventListener("pointerup", (e) => {
-  if (document.documentElement.scrollWidth / 2 < e.pageX) {
-    next();
+// ==== Bookmark ====
+
+function getBookmarkKey() {
+  const props = getCurrentBaniProperties();
+  return props ? `bookmark-${props.path}` : null;
+}
+
+function saveBookmark() {
+  const key = getBookmarkKey();
+  if (!key || !pages[currentPage]) return;
+  localStorage.setItem(key, String(pages[currentPage].start));
+}
+
+function loadBookmark() {
+  const key = getBookmarkKey();
+  if (!key) return null;
+  const val = localStorage.getItem(key);
+  return val !== null ? parseInt(val, 10) : null;
+}
+
+// ==== Tap Indicator Overlay ====
+
+const ICONS = {
+  bookmark: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`,
+  settings: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  prev: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`,
+  next: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`
+};
+
+const QUADRANTS = [
+  { cls: "tl", action: "bookmark", icon: ICONS.bookmark },
+  { cls: "tr", action: "settings", icon: ICONS.settings },
+  { cls: "bl", action: "prev", icon: ICONS.prev },
+  { cls: "br", action: "next", icon: ICONS.next }
+];
+
+function createTapIndicator() {
+  const overlay = document.createElement("div");
+  overlay.className = "tap-indicator";
+
+  for (const q of QUADRANTS) {
+    const div = document.createElement("div");
+    div.className = `quadrant ${q.cls}`;
+    div.dataset.action = q.action;
+    div.innerHTML = q.icon;
+    overlay.appendChild(div);
   }
-  if (document.documentElement.scrollWidth / 2 > e.pageX) {
+
+  document.body.appendChild(overlay);
+  return overlay;
+}
+
+let tapTimeout = null;
+
+function showTapIcon(quadrantCls) {
+  const overlay = document.querySelector(".tap-indicator");
+  if (!overlay) return;
+
+  clearTimeout(tapTimeout);
+
+  for (const q of overlay.querySelectorAll(".quadrant")) {
+    q.classList.remove("show");
+  }
+
+  const target = overlay.querySelector(`.quadrant.${quadrantCls}`);
+  if (target) target.classList.add("show");
+
+  overlay.classList.add("active");
+
+  tapTimeout = setTimeout(() => {
+    overlay.classList.remove("active");
+    for (const q of overlay.querySelectorAll(".quadrant")) {
+      q.classList.remove("show");
+    }
+  }, 1000);
+}
+
+// ==== Touch ===
+
+window.addEventListener("pointerup", (e) => {
+  if (!bani) return;
+  if (e.target.closest(".settings-overlay")) return;
+
+  const x = e.clientX;
+  const y = e.clientY;
+  const halfW = window.innerWidth / 2;
+  const halfH = window.innerHeight / 2;
+
+  if (x < halfW && y < halfH) {
+    saveBookmark();
+    showTapIcon("tl");
+  } else if (x >= halfW && y < halfH) {
+    toggleSettings();
+    showTapIcon("tr");
+  } else if (x < halfW && y >= halfH) {
     prev();
+    showTapIcon("bl");
+  } else {
+    next();
+    showTapIcon("br");
   }
 });
 
+// ==== Settings Overlay ====
+
+const FONT_SIZES = [
+  { label: "Small", value: "small" },
+  { label: "Medium", value: "medium" },
+  { label: "Large", value: "large" },
+  { label: "X-Large", value: "x-large" },
+  { label: "XX-Large", value: "xx-large" },
+  { label: "XXX-Large", value: "xxx-large" },
+  { label: "Huge", value: "48px" }
+];
+
+const DEFAULT_FONT_INDEX = 4;
+
+const settingsOverlay = document.createElement("div");
+settingsOverlay.className = "settings-overlay";
+
+let showSettings = false;
+
+function getFontSizeIndex() {
+  const saved = localStorage.getItem("bani-font-size");
+  if (saved !== null) {
+    const idx = FONT_SIZES.findIndex(fs => fs.value === saved);
+    if (idx !== -1) return idx;
+  }
+  return DEFAULT_FONT_INDEX;
+}
+
+function applyFontSize(index) {
+  const size = FONT_SIZES[index].value;
+  document.documentElement.style.setProperty("--bani-font-size", size);
+  localStorage.setItem("bani-font-size", size);
+
+  const label = settingsOverlay.querySelector(".font-size-label");
+  const slider = settingsOverlay.querySelector(".font-size-slider");
+  if (label) label.textContent = FONT_SIZES[index].label;
+  if (slider) slider.value = index;
+}
+
+function buildSettingsPanel() {
+  const panel = document.createElement("div");
+  panel.className = "settings-panel";
+
+  const title = document.createElement("h2");
+  title.textContent = "Settings";
+  panel.appendChild(title);
+
+  const label = document.createElement("label");
+  label.htmlFor = "font-size-slider";
+  label.textContent = "Font Size: ";
+
+  const sizeLabel = document.createElement("span");
+  sizeLabel.className = "font-size-label";
+  sizeLabel.textContent = FONT_SIZES[getFontSizeIndex()].label;
+  label.appendChild(sizeLabel);
+  panel.appendChild(label);
+
+  const slider = document.createElement("input");
+  slider.type = "range";
+  slider.id = "font-size-slider";
+  slider.className = "font-size-slider";
+  slider.min = 0;
+  slider.max = FONT_SIZES.length - 1;
+  slider.value = getFontSizeIndex();
+  slider.addEventListener("input", () => {
+    applyFontSize(parseInt(slider.value, 10));
+  });
+  panel.appendChild(slider);
+
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "close-btn";
+  closeBtn.textContent = "Close";
+  closeBtn.addEventListener("click", () => toggleSettings());
+  panel.appendChild(closeBtn);
+
+  return panel;
+}
+
+function overlaySettings() {
+  settingsOverlay.appendChild(buildSettingsPanel());
+  settingsOverlay.addEventListener("click", (e) => {
+    if (e.target === settingsOverlay) {
+      toggleSettings();
+    }
+  });
+  document.body.appendChild(settingsOverlay);
+}
+
+function toggleSettings() {
+  showSettings = !showSettings;
+  settingsOverlay.classList.toggle("open", showSettings);
+
+  if (showSettings) {
+    const idx = getFontSizeIndex();
+    const slider = settingsOverlay.querySelector(".font-size-slider");
+    const label = settingsOverlay.querySelector(".font-size-label");
+    if (slider) slider.value = idx;
+    if (label) label.textContent = FONT_SIZES[idx].label;
+  }
+}
 
 // ==== Initialization ====
 
 async function init() {
-
-  // Load bani
   bani = await loadBani();
   if (!bani) {
     renderBanisList(baniDiv);
     return;
   }
 
-  // Render bani
-  calculatePage(0);
+  applyFontSize(getFontSizeIndex());
+
+  const bookmark = loadBookmark();
+
+  if (bookmark !== null) {
+    pages = [];
+    currentPage = 0;
+    calculatePage(0);
+
+    while (true) {
+      const page = pages[currentPage];
+      if (bookmark >= page.start && bookmark <= page.end) break;
+      if (page.end >= bani.length - 1) break;
+      next();
+    }
+  } else {
+    calculatePage(0);
+  }
+
+  overlaySettings();
+  createTapIndicator();
 }
 
 (async () => await init())()
