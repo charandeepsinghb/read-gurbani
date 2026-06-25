@@ -188,6 +188,19 @@ function loadBookmark() {
   return val !== null ? parseInt(val, 10) : null;
 }
 
+function clearBookmark() {
+  const key = getBookmarkKey();
+  if (key) localStorage.removeItem(key);
+}
+
+function restart() {
+  pages = [];
+  currentPage = 0;
+  clearBookmark();
+  calculatePage(0);
+  toggleSettings();
+}
+
 // ==== Tap Indicator Overlay ====
 
 const ICONS = {
@@ -333,6 +346,14 @@ function buildSettingsPanel() {
     applyFontSize(parseInt(slider.value, 10));
   });
   panel.appendChild(slider);
+
+  if (bani) {
+    const restartBtn = document.createElement("button");
+    restartBtn.className = "restart-btn";
+    restartBtn.textContent = "Restart from beginning";
+    restartBtn.addEventListener("click", () => restart());
+    panel.appendChild(restartBtn);
+  }
 
   const closeBtn = document.createElement("button");
   closeBtn.className = "close-btn";

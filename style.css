@@ -96,8 +96,7 @@ body {
   z-index: 1001;
   align-items: center;
   justify-content: center;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+
 }
 
 .settings-overlay.open {
@@ -195,4 +194,25 @@ body {
 
 .settings-panel .close-btn:active {
   background: #eee;
+}
+
+.settings-panel .restart-btn {
+  margin-top: 12px;
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e74c3c;
+  border-radius: 10px;
+  background: none;
+  color: #e74c3c;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.15s ease;
+}
+
+.settings-panel .restart-btn:hover {
+  background: #fef2f2;
+}
+
+.settings-panel .restart-btn:active {
+  background: #fee2e2;
 }
