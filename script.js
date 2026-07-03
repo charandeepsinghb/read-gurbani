@@ -5,6 +5,11 @@ const BANIS = [
     name: "Japji Sahib",
     path: "japji-sahib",
     baniFile: "japji-sahib.json"
+  },
+  {
+    name: "Sukhmani Sahib",
+    path: "sukhmani-sahib",
+    baniFile: "sukhmani-sahib.json"
   }
 ];
 
