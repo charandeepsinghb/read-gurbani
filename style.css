@@ -22,6 +22,14 @@ body {
   margin-bottom: 1rem;
 }
 
+.english {
+  margin-top: 0.75rem;
+  font-size: 0.8em;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #444;
+  line-height: 1.4;
+}
+
 .bani {
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -194,6 +202,23 @@ body {
 
 .settings-panel .close-btn:active {
   background: #eee;
+}
+
+.settings-panel .setting-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  margin-top: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.settings-panel .setting-row input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
 }
 
 .settings-panel .restart-btn {

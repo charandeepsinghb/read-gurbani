@@ -45,6 +45,26 @@ function getCurrentBaniProperties() {
 const baniDiv = document.getElementById("bani");
 let bani;
 
+function getShowEnglish() {
+  return localStorage.getItem("show-english") === "true";
+}
+
+function setShowEnglish(val) {
+  localStorage.setItem("show-english", String(val));
+}
+
+function addEnglishToPara(para, start, end) {
+  const texts = [];
+  for (let i = start; i <= end; i++) {
+    if (bani[i].en) texts.push(bani[i].en);
+  }
+  if (texts.length === 0) return;
+  const enDiv = document.createElement("div");
+  enDiv.className = "english";
+  enDiv.innerText = texts.join(" ");
+  para.appendChild(enDiv);
+}
+
 async function loadBani() {
   const { baniFile } = getCurrentBaniProperties() || {};
 
@@ -64,12 +84,15 @@ function renderPage(pageIndex) {
   baniDiv.replaceChildren();
 
   let para;
+  let paraStart = page.start;
+  const showEn = getShowEnglish();
 
   for (let i = page.start; i <= page.end; i++) {
     if (!para) {
       para = document.createElement("div");
       para.className = "para";
       baniDiv.appendChild(para);
+      paraStart = i;
     }
 
     const span = document.createElement("span");
@@ -82,8 +105,13 @@ function renderPage(pageIndex) {
       i !== page.end &&
       bani[i + 1].paragraph !== bani[i].paragraph
     ) {
+      if (showEn) addEnglishToPara(para, paraStart, i);
       para = null;
     }
+  }
+
+  if (showEn && para) {
+    addEnglishToPara(para, paraStart, page.end);
   }
 }
 
@@ -94,6 +122,8 @@ function calculatePage(start) {
   para.className = "para";
 
   let end = start - 1;
+  let paraStart = start;
+  const showEn = getShowEnglish();
 
   for (let i = start; i < bani.length; i++) {
     if (!para.parentNode) {
@@ -122,8 +152,29 @@ function calculatePage(start) {
       i < bani.length - 1 &&
       bani[i + 1].paragraph !== bani[i].paragraph
     ) {
+      if (showEn) {
+        addEnglishToPara(para, paraStart, i);
+        if (baniDiv.offsetHeight > window.innerHeight) {
+          const enDiv = para.querySelector(".english");
+          if (enDiv) enDiv.remove();
+          para.remove();
+          end = paraStart - 1;
+          break;
+        }
+      }
       para = document.createElement("div");
       para.className = "para";
+      paraStart = i + 1;
+    }
+  }
+
+  if (showEn && end >= start && para.parentNode) {
+    addEnglishToPara(para, paraStart, end);
+    if (baniDiv.offsetHeight > window.innerHeight) {
+      const enDiv = para.querySelector(".english");
+      if (enDiv) enDiv.remove();
+      para.remove();
+      end = paraStart - 1;
     }
   }
 
@@ -351,6 +402,19 @@ function buildSettingsPanel() {
     applyFontSize(parseInt(slider.value, 10));
   });
   panel.appendChild(slider);
+
+  const enLabel = document.createElement("label");
+  enLabel.className = "setting-row";
+  const enCheckbox = document.createElement("input");
+  enCheckbox.type = "checkbox";
+  enCheckbox.checked = getShowEnglish();
+  enCheckbox.addEventListener("change", () => {
+    setShowEnglish(enCheckbox.checked);
+    restart();
+  });
+  enLabel.appendChild(enCheckbox);
+  enLabel.append(" Show English meanings");
+  panel.appendChild(enLabel);
 
   if (bani) {
     const restartBtn = document.createElement("button");
